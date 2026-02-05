@@ -1,0 +1,9 @@
+{
+  "name": "POI Zones",
+  "content_in_root": false,
+  "filename": "poi_zones",
+  "render_readme": true,
+  "domains": ["sensor", "zone"],
+  "homeassistant": "2024.1.0",
+  "iot_class": "Cloud Polling"
+}
