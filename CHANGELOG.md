@@ -8,10 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2026-02-05
 
 ### Added
-- **Zone name prefix/customization**: Configure custom prefixes for zone entities to avoid cluttering the entity list
-  - Default format: `{poi_type}_{city}_{poi_name}` (e.g., `zone.hospital_syracuse_crouse_hospital`)
-  - Customizable during setup
+- **Zone name prefix/customization** (REQUIRED): Configure custom prefixes for zone entities to avoid cluttering the entity list
+  - **Prefix is now required** for better entity organization
+  - Simple default: just the POI type (e.g., `hospital`)
+  - Fully customizable to your preference (e.g., `nyc_hospital`, `home_hospital`, `my_hospital`)
+  - Results in clean entity names: `zone.{prefix}_{poi_name}`
+  - Example: prefix "hospital" → `zone.hospital_crouse_hospital`
+  - Example: prefix "syracuse_hospital" → `zone.syracuse_hospital_crouse_hospital`
   - Prevents 2000+ unprefixed entities
+  - **Prioritizes user customization** over automatic naming
 - GitHub Actions for automated releases
   - Automatic release creation on version tags
   - Auto-packaged integration ZIP files

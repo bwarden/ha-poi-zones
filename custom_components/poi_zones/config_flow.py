@@ -99,11 +99,8 @@ class POIZonesConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 title = f"{poi_config['name']} - {city}"
                 
-                # Get zone prefix or generate default
-                zone_prefix = user_input.get(CONF_ZONE_PREFIX)
-                if not zone_prefix:
-                    city_slug = city.replace(",", "").replace(" ", "_").lower()
-                    zone_prefix = f"{self._poi_type}_{city_slug}"
+                # Get zone prefix (now required, but provide fallback just in case)
+                zone_prefix = user_input.get(CONF_ZONE_PREFIX, self._poi_type)
 
                 return self.async_create_entry(
                     title=title,
@@ -122,16 +119,15 @@ class POIZonesConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 errors["base"] = "invalid_city"
 
-        # Generate default zone prefix suggestion
-        city_slug = self._city.replace(",", "").replace(" ", "_").lower() if self._city else "location"
-        default_prefix = f"{self._poi_type}_{city_slug}"
+        # Generate simple default prefix suggestion (just POI type)
+        default_prefix = self._poi_type
 
         return self.async_show_form(
             step_id="location",
             data_schema=vol.Schema(
                 {
                     vol.Required(CONF_CITY): str,
-                    vol.Optional(
+                    vol.Required(
                         CONF_ZONE_PREFIX,
                         description={"suggested_value": default_prefix}
                     ): str,
