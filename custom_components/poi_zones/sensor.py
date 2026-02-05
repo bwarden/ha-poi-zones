@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_CITY, CONF_POI_TYPE, DOMAIN, POI_TYPES
+from .const import CONF_CITY, CONF_POI_TYPE, CONF_ZONE_PREFIX, DOMAIN, POI_TYPES
 from .coordinator import POIZonesCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -73,16 +73,22 @@ class POISensor(CoordinatorEntity[POIZonesCoordinator], SensorEntity):
             "locations": [],
         }
 
+        # Get zone prefix from config
+        zone_prefix = self._entry.data.get(CONF_ZONE_PREFIX, self.coordinator.poi_type)
+
         # Store zone IDs for easy automation access
         zone_ids = []
 
         # Add each POI
         for poi in pois:
-            zone_id = self._slugify(poi['name'])
+            # Generate prefixed zone name and ID (matching __init__.py)
+            prefixed_name = f"{zone_prefix}_{poi['name']}"
+            zone_id = self._slugify(prefixed_name)
             zone_ids.append(zone_id)
 
             location = {
-                "name": poi["name"],
+                "name": poi["name"],  # Original name for reference
+                "zone_name": prefixed_name,  # Full prefixed name
                 "latitude": poi["latitude"],
                 "longitude": poi["longitude"],
                 "zone_id": zone_id,

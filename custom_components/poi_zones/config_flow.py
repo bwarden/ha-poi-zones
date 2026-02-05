@@ -23,6 +23,7 @@ from .const import (
     CONF_CITY,
     CONF_POI_TYPE,
     CONF_SEARCH_RADIUS,
+    CONF_ZONE_PREFIX,
     CONF_ZONE_RADIUS,
     DEFAULT_SEARCH_RADIUS,
     DEFAULT_ZONE_RADIUS,
@@ -98,11 +99,18 @@ class POIZonesConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 title = f"{poi_config['name']} - {city}"
                 
+                # Get zone prefix or generate default
+                zone_prefix = user_input.get(CONF_ZONE_PREFIX)
+                if not zone_prefix:
+                    city_slug = city.replace(",", "").replace(" ", "_").lower()
+                    zone_prefix = f"{self._poi_type}_{city_slug}"
+
                 return self.async_create_entry(
                     title=title,
                     data={
                         CONF_CITY: city,
                         CONF_POI_TYPE: self._poi_type,
+                        CONF_ZONE_PREFIX: zone_prefix,
                         CONF_SEARCH_RADIUS: user_input.get(
                             CONF_SEARCH_RADIUS, DEFAULT_SEARCH_RADIUS
                         ),
@@ -114,11 +122,19 @@ class POIZonesConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 errors["base"] = "invalid_city"
 
+        # Generate default zone prefix suggestion
+        city_slug = self._city.replace(",", "").replace(" ", "_").lower() if self._city else "location"
+        default_prefix = f"{self._poi_type}_{city_slug}"
+
         return self.async_show_form(
             step_id="location",
             data_schema=vol.Schema(
                 {
                     vol.Required(CONF_CITY): str,
+                    vol.Optional(
+                        CONF_ZONE_PREFIX,
+                        description={"suggested_value": default_prefix}
+                    ): str,
                     vol.Optional(
                         CONF_SEARCH_RADIUS, default=DEFAULT_SEARCH_RADIUS
                     ): NumberSelector(

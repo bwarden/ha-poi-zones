@@ -8,6 +8,7 @@ CONF_CITY: Final = "city"
 CONF_POI_TYPE: Final = "poi_type"
 CONF_SEARCH_RADIUS: Final = "search_radius"
 CONF_ZONE_RADIUS: Final = "zone_radius"
+CONF_ZONE_PREFIX: Final = "zone_prefix"
 
 # Defaults
 DEFAULT_SEARCH_RADIUS: Final = 25  # km from city center

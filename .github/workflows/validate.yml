@@ -1,0 +1,90 @@
+name: Validate
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate manifest
+        run: |
+          echo "Checking manifest.json..."
+          if [ ! -f "custom_components/poi_zones/manifest.json" ]; then
+            echo "❌ manifest.json not found"
+            exit 1
+          fi
+
+          # Validate JSON syntax
+          python3 -c "import json; json.load(open('custom_components/poi_zones/manifest.json'))"
+          echo "✅ manifest.json is valid"
+
+      - name: Validate HACS
+        run: |
+          echo "Checking hacs.json..."
+          if [ ! -f "hacs.json" ]; then
+            echo "❌ hacs.json not found"
+            exit 1
+          fi
+
+          # Validate JSON syntax
+          python3 -c "import json; json.load(open('hacs.json'))"
+          echo "✅ hacs.json is valid"
+
+      - name: Check required files
+        run: |
+          echo "Checking required files..."
+
+          required_files=(
+            "custom_components/poi_zones/__init__.py"
+            "custom_components/poi_zones/manifest.json"
+            "custom_components/poi_zones/config_flow.py"
+            "custom_components/poi_zones/const.py"
+            "custom_components/poi_zones/coordinator.py"
+            "custom_components/poi_zones/sensor.py"
+            "README.md"
+            "LICENSE"
+          )
+
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing required file: $file"
+              exit 1
+            fi
+          done
+
+          echo "✅ All required files present"
+
+      - name: Validate Python syntax
+        run: |
+          echo "Checking Python syntax..."
+          python3 -m py_compile custom_components/poi_zones/*.py
+          echo "✅ Python syntax is valid"
+
+      - name: Check version consistency
+        run: |
+          echo "Checking version consistency..."
+
+          # Get version from manifest
+          MANIFEST_VERSION=$(python3 -c "import json; print(json.load(open('custom_components/poi_zones/manifest.json'))['version'])")
+          echo "Manifest version: $MANIFEST_VERSION"
+
+          # Check if there's a tag for this version
+          if git describe --tags --exact-match 2>/dev/null; then
+            TAG_VERSION=$(git describe --tags --exact-match | sed 's/^v//')
+            echo "Tag version: $TAG_VERSION"
+
+            if [ "$MANIFEST_VERSION" != "$TAG_VERSION" ]; then
+              echo "⚠️  Version mismatch: manifest=$MANIFEST_VERSION, tag=$TAG_VERSION"
+            else
+              echo "✅ Versions match"
+            fi
+          else
+            echo "ℹ️  No tag found (this is okay for development)"
+          fi

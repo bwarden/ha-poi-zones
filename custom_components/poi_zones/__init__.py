@@ -15,6 +15,7 @@ from .const import (
     CONF_CITY,
     CONF_POI_TYPE,
     CONF_SEARCH_RADIUS,
+    CONF_ZONE_PREFIX,
     CONF_ZONE_RADIUS,
     DEFAULT_SEARCH_RADIUS,
     DEFAULT_ZONE_RADIUS,
@@ -147,14 +148,20 @@ async def _create_zones(
         )
         return
 
+    # Get zone prefix from config
+    zone_prefix = entry.data.get(CONF_ZONE_PREFIX, f"{poi_type}")
+
     for poi in pois:
-        # Check if zone already exists (by name, since we can't control IDs)
+        # Create prefixed zone name (this will be used to generate the entity ID)
+        prefixed_name = f"{zone_prefix}_{poi['name']}"
+
+        # Check if zone already exists (by prefixed name)
         existing_id = None
         existing_item = None
         try:
             for item in storage_collection.async_items():
-                # Match by name to find existing POI zones
-                if item.get("name") == poi["name"]:
+                # Match by prefixed name to find existing POI zones
+                if item.get("name") == prefixed_name:
                     existing_id = item.get("id")
                     existing_item = item
                     break
@@ -162,7 +169,7 @@ async def _create_zones(
             _LOGGER.debug("Could not check existing zones: %s", err)
 
         zone_data = {
-            "name": poi["name"],
+            "name": prefixed_name,  # Use prefixed name
             "latitude": poi["latitude"],
             "longitude": poi["longitude"],
             "radius": float(poi["zone_radius"]),

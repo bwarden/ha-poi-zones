@@ -1,0 +1,81 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create release archive
+        run: |
+          cd custom_components
+          zip -r poi_zones.zip poi_zones/
+          mv poi_zones.zip ../
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          cat > release_notes.md << 'EOF'
+          ## What's Changed
+
+          See the [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for detailed changes.
+
+          ## Installation
+
+          ### Via HACS (Recommended)
+          1. Open HACS in Home Assistant
+          2. Click the 3 dots → "Custom repositories"
+          3. Add: `https://github.com/${{ github.repository }}`
+          4. Category: Integration
+          5. Search for "POI Zones" and install
+          6. Restart Home Assistant
+
+          ### Manual Installation
+          1. Download `poi_zones.zip` from the assets below
+          2. Extract to your `config/custom_components/` directory
+          3. Restart Home Assistant
+
+          ## Features
+
+          - 🏥 40+ POI types from OpenStreetMap
+          - 📍 Automatic Home Assistant zone creation with customizable prefixes
+          - 🎯 Dynamic radius sizing for healthcare facilities
+          - 🔄 Weekly automatic updates
+          - 🔔 Generic automation templates
+
+          ## Data Source
+
+          Data provided by OpenStreetMap contributors under ODbL license.
+          EOF
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_OUTPUT
+          cat release_notes.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: poi_zones.zip
+          body: ${{ steps.release_notes.outputs.RELEASE_NOTES }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update HACS repository file
+        run: |
+          echo "✅ Release ${{ steps.get_version.outputs.VERSION }} created successfully!"
+          echo "📦 Archive: poi_zones.zip"
+          echo "🔗 Release URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.get_version.outputs.VERSION }}"
