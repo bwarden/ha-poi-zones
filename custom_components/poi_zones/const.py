@@ -226,6 +226,14 @@ POI_TYPES: Final = {
             {"railway": "station"},
         ],
     },
+    "light_rail_station": {
+        "name": "Light Rail Stations",
+        "icon": "mdi:tram-side",
+        "radius": 60,
+        "filters": [
+            {"station": "light-rail"},
+        ],
+    },
     "ev_charging": {
         "name": "EV Charging Stations",
         "icon": "mdi:ev-station",
