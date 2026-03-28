@@ -21,6 +21,9 @@ NOMINATIM_URL: Final = "https://nominatim.openstreetmap.org/search"
 # Update interval (POIs don't move often, check weekly)
 UPDATE_INTERVAL: Final = 7 * 24 * 60 * 60  # 7 days in seconds
 
+# Cache TTL for Overpass API responses (avoid rate limiting)
+CACHE_TTL: Final = 24 * 60 * 60  # 24 hours in seconds
+
 # POI Types - individual types only
 POI_TYPES: Final = {
     "hospital": {
