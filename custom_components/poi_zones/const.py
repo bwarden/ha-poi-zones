@@ -234,7 +234,7 @@ POI_TYPES: Final = {
         "icon": "mdi:tram-side",
         "radius": 60,
         "filters": [
-            {"station": "light-rail"},
+            {"station": "light_rail"},
         ],
     },
     "ev_charging": {
